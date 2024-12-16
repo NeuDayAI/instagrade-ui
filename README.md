@@ -16,7 +16,7 @@ Instagrade UI is a user interface component for the Instagrade application, desi
 1. **Clone the repository**
 
     ```bash
-    git clone https://github.com/itscodezero/instagrade-ui.git
+    git clone https://github.com/NeuDayAI/instagrade-ui.git
     ```
 
 2. **Navigate to the project directory**

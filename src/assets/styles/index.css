@@ -1,0 +1,26 @@
+/* Global styles */
+:root {
+  --primary-color: #4299E1;
+  --secondary-color: #48BB78;
+  --accent-color: #9F7AEA;
+  --background-light: #F7FAFC;
+  --background-dark: #1A202C;
+  --text-light: #2D3748;
+  --text-dark: #E2E8F0;
+}
+
+/* Utility classes */
+.text-gradient {
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Animation classes */
+.hover-lift {
+  transition: transform 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}

@@ -1,7 +1,7 @@
 // Common response types
 export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
+  data: T[];
+  length: number;
 }
 
 export interface Message {

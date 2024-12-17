@@ -12,7 +12,7 @@ import { EditDepartmentModal } from './Modals/EditDepartmentModal';
 import { useExamStore } from '../../store/examStore';
 import { ImportDataButton } from './Common/ImportDataButton';
 import { DataTable } from './Common/DataTable';
-import { Department } from '../../types/exam';
+import { Department, PaginatedResponse } from '../../services/api/types';
 import { departmentService } from '@/services/api';
 
 export const DepartmentManager = () => {
@@ -28,7 +28,7 @@ export const DepartmentManager = () => {
   } = useDisclosure();
   const toast = useToast();
   const { deleteDepartment } = useExamStore();
-  const [departments, setDepartments] = React.useState<Department[]>([]);
+  const [departments, setDepartments] = React.useState<PaginatedResponse<Department>>({ data: [], length: 0 });
   const [selectedDepartment, setSelectedDepartment] = React.useState<Department | null>(null);
 
   const columnHelper = createColumnHelper<Department>();
@@ -70,7 +70,8 @@ export const DepartmentManager = () => {
   const fetchDepartments = async () => {
     try {
       const response = await departmentService.getDepartments();
-      setDepartments(response.data.items);
+      console.log(response.data);
+      setDepartments(response.data);
     } catch (error) {
       toast({
         title: 'Error fetching departments',
@@ -94,7 +95,7 @@ export const DepartmentManager = () => {
       </HStack>
 
       <DataTable
-        data={departments}
+        data={departments.data}
         columns={columns}
         onEdit={handleEdit}
         onDelete={handleDelete}

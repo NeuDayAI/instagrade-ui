@@ -1,6 +1,6 @@
 import { api } from './client';
 import { API_ENDPOINTS } from './config';
-import { Department, DepartmentCreate, DepartmentUpdate, PaginatedResponse } from './types';
+import { Department, DepartmentCreate, DepartmentUpdate, PaginatedResponse} from './types';
 
 export const departmentService = {
   // Get all departments with pagination

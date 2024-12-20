@@ -32,6 +32,7 @@ import {
   flexRender,
   SortDirection,
   SortingState,
+  getPaginationRowModel,
 } from '@tanstack/react-table';
 import { FiEdit2, FiTrash2, FiSearch, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 
@@ -66,10 +67,12 @@ export function DataTable<T>({ data, columns, onEdit, onDelete }: DataTableProps
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     state: {
       sorting,
-      globalFilter: filtering,
+      globalFilter: filtering
     },
+    pageCount: data.length,
     onSortingChange: setSorting,
     onGlobalFilterChange: setFiltering,
   });

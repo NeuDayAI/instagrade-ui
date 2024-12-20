@@ -9,12 +9,12 @@ import {
 import { createColumnHelper } from '@tanstack/react-table';
 import { AddDepartmentModal } from './Modals/AddDepartmentModal';
 import { EditDepartmentModal } from './Modals/EditDepartmentModal';
-import { useExamStore } from '../../store/examStore';
 import { ImportDataButton } from './Common/ImportDataButton';
 import { DataTable } from './Common/DataTable';
-import { Department } from '../../services/api/types';
+import { APIError, Department } from '@/services/api';
 import { departmentService } from '@/services/api';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { AxiosError } from 'axios';
 
 export const DepartmentManager = () => {
   const { 
@@ -28,7 +28,6 @@ export const DepartmentManager = () => {
     onClose: onEditClose 
   } = useDisclosure();
   const toast = useToast();
-  const { deleteDepartment } = useExamStore();
   const queryClient = useQueryClient()
   const query = useQuery(
     ['departments'],
@@ -74,9 +73,21 @@ export const DepartmentManager = () => {
           duration: 3000,
         });
       },
-      onError: () => {
+      onError: (error: AxiosError<APIError>) => {
+        let errorMessage : string = '';
+          if (error.response) {
+            // Server responded with an error status
+            errorMessage = error.response.data.message;
+          } else if (error.request) {
+            // Request made but no response received
+            errorMessage = 'Network error: ' + error.request;
+          } else {
+            // Something else went wrong
+            errorMessage = error.message;
+          }
         toast({
           title: 'Failed to delete department',
+          description: errorMessage,
           status: 'error',
           duration: 3000,
         });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -16,9 +16,10 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
-import { Department } from '@/services/api';
+import { APIError, Department } from '@/services/api';
 import { departmentService } from '@/services/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 
 interface EditDepartmentModalProps {
   isOpen: boolean;
@@ -47,9 +48,21 @@ export const EditDepartmentModal = ({ isOpen, onClose, department }: EditDepartm
         });
         onClose();
       },
-      onError: () => {
+      onError: (error: AxiosError<APIError>) => {
+        let errorMessage : string = '';
+        if (error.response) {
+          // Server responded with an error status
+          errorMessage = error.response.data.message;
+        } else if (error.request) {
+          // Request made but no response received
+          errorMessage = 'Network error: ' + error.request;
+        } else {
+          // Something else went wrong
+          errorMessage = error.message;
+        }
         toast({
           title: 'Error updating department',
+          description: errorMessage,
           status: 'error',
           duration: 3000,
         });
@@ -60,6 +73,7 @@ export const EditDepartmentModal = ({ isOpen, onClose, department }: EditDepartm
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
@@ -70,6 +84,13 @@ export const EditDepartmentModal = ({ isOpen, onClose, department }: EditDepartm
   const onSubmit = (data: FormData) => {
    mutation.mutate({ id: department.department_id, name: data.departmentName });
   };
+
+  useEffect(() => {
+    reset({
+      departmentName: department.department_name,
+    });
+  }
+  , [department, reset]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

@@ -10,10 +10,11 @@ import {
 import { createColumnHelper } from '@tanstack/react-table';
 import { AddSubjectModal } from './Modals/AddSubjectModal';
 import { EditSubjectModal } from './Modals/EditSubjectModal';
-import { useExamStore } from '../../store/examStore';
 import { ImportDataButton } from './Common/ImportDataButton';
 import { DataTable } from './Common/DataTable';
-import { Subject } from '../../types/exam';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { subjectService, departmentService , Subject} from '@/services/api';
+import {  } from '@/services/api';
 
 export const SubjectManager = () => {
   const { 
@@ -27,11 +28,40 @@ export const SubjectManager = () => {
     onClose: onEditClose 
   } = useDisclosure();
   const toast = useToast();
-  const { subjects, deleteSubject, getDepartmentName } = useExamStore();
+ 
   const [selectedSubject, setSelectedSubject] = React.useState<Subject | null>(null);
-
+  const queryClient = useQueryClient();
   const columnHelper = createColumnHelper<Subject>();
   
+  const querySubject = useQuery(
+    ['subjects'],
+    () => subjectService.getSubjects()
+  );
+
+  const queryDepartment = useQuery(
+    ['departments'],
+    () => departmentService.getDepartments()
+  );
+
+  const getDepartmentName = (departmentId: number) => {
+    const department = queryDepartment.data?.data.data.find(
+      dep => dep.department_id === departmentId
+    );
+    return department?.department_name || '';
+  }
+  // Mutation to delete a subject
+  const deleteMutation = useMutation(subjectService.deleteSubject, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['subjects']);
+      toast({
+        title: 'Subject deleted successfully.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    },
+  });
+
   const columns = [
     columnHelper.accessor('subject_id', {
       header: 'ID',
@@ -69,13 +99,7 @@ export const SubjectManager = () => {
   };
 
   const handleDelete = (subject: Subject) => {
-    deleteSubject(subject.subject_id);
-    toast({
-      title: 'Subject deleted',
-      description: `${subject.subject_name} has been removed`,
-      status: 'success',
-      duration: 3000,
-    });
+    deleteMutation.mutate(subject.subject_id);
   };
 
   return (
@@ -88,7 +112,7 @@ export const SubjectManager = () => {
       </HStack>
 
       <DataTable
-        data={subjects}
+        data={querySubject.data?.data.data || []}
         columns={columns}
         onEdit={handleEdit}
         onDelete={handleDelete}

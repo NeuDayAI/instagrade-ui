@@ -16,6 +16,11 @@ import {
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 
+import { DepartmentCreate } from '@/services/api';
+import { departmentService } from '@/services/api';
+import { useToast } from '@chakra-ui/react';
+
+
 interface AddDepartmentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,6 +30,8 @@ interface FormData {
   departmentName: string;
 }
 
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+
 export const AddDepartmentModal = ({ isOpen, onClose }: AddDepartmentModalProps) => {
   const {
     register,
@@ -32,8 +39,32 @@ export const AddDepartmentModal = ({ isOpen, onClose }: AddDepartmentModalProps)
     formState: { errors },
   } = useForm<FormData>();
 
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+   const addDepartmentMutation = useMutation(
+      (newDepartment: DepartmentCreate) => departmentService.createDepartment(newDepartment),
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries(['departments']);
+          toast({
+            title: 'Department added successfully',
+            status: 'success',
+            duration: 3000,
+          });
+        },
+        onError: () => {
+          toast({
+            title: 'Error adding department',
+            status: 'error',
+            duration: 3000,
+          });
+        },
+      }
+    );
+
   const onSubmit = (data: FormData) => {
-    // Here you would typically save the department
+    addDepartmentMutation.mutate({ department_name: data.departmentName });
     console.log(data);
     onClose();
   };

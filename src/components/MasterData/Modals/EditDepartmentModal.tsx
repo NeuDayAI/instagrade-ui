@@ -16,8 +16,9 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
-import { Department } from '../../../types/exam';
-import { useExamStore } from '../../../store/examStore';
+import { Department } from '@/services/api';
+import { departmentService } from '@/services/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface EditDepartmentModalProps {
   isOpen: boolean;
@@ -31,8 +32,31 @@ interface FormData {
 
 export const EditDepartmentModal = ({ isOpen, onClose, department }: EditDepartmentModalProps) => {
   const toast = useToast();
-  const { updateDepartment } = useExamStore();
+
+  const queryClient = useQueryClient();
   
+  const mutation = useMutation(
+    (data: { id: number; name: string }) => departmentService.updateDepartment(data.id, { department_name: data.name }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['departments']);
+        toast({
+          title: 'Department updated',
+          status: 'success',
+          duration: 3000,
+        });
+        onClose();
+      },
+      onError: () => {
+        toast({
+          title: 'Error updating department',
+          status: 'error',
+          duration: 3000,
+        });
+      },
+    }
+  );
+
   const {
     register,
     handleSubmit,
@@ -44,19 +68,7 @@ export const EditDepartmentModal = ({ isOpen, onClose, department }: EditDepartm
   });
 
   const onSubmit = (data: FormData) => {
-    updateDepartment(department.department_id, {
-      ...department,
-      department_name: data.departmentName,
-    });
-    
-    toast({
-      title: 'Department updated',
-      description: `${data.departmentName} has been updated successfully`,
-      status: 'success',
-      duration: 3000,
-    });
-    
-    onClose();
+   mutation.mutate({ id: department.department_id, name: data.departmentName });
   };
 
   return (

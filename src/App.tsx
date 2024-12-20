@@ -20,7 +20,19 @@ import { Settings } from './pages/Settings';
 import { ExamSchedule } from './pages/ExamSchedule';
 import { useSidebarStore } from './store/sidebarStore';
 import { useAuthStore } from './store/authStore';
-
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 const PrivateRoutes = () => {
   const { isCollapsed } = useSidebarStore();
   const { user } = useAuthStore();
@@ -56,22 +68,25 @@ const PrivateRoutes = () => {
 
 function App() {
   return (
-    <ChakraProvider theme={theme}>
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <Router>
-        <Flex>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/*" element={
-              <PrivateRoute>
-                <PrivateRoutes />
-              </PrivateRoute>
-            } />
-          </Routes>
-        </Flex>
-      </Router>
-    </ChakraProvider>
+    <QueryClientProvider client={queryClient}>
+      <ChakraProvider theme={theme}>
+        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+        <Router>
+          <Flex>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/*" element={
+                <PrivateRoute>
+                  <PrivateRoutes />
+                </PrivateRoute>
+              } />
+            </Routes>
+          </Flex>
+        </Router>
+      </ChakraProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 

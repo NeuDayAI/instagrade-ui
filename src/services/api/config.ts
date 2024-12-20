@@ -1,5 +1,8 @@
+import { config } from './config/index';
+
 // API configuration
-export const API_BASE_URL = 'http://localhost/api/v1';
+
+export const API_BASE_URL = config.apiUrl;
 
 export const API_ENDPOINTS = {
   // Department endpoints

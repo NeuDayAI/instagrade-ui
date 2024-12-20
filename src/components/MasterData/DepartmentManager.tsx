@@ -12,8 +12,9 @@ import { EditDepartmentModal } from './Modals/EditDepartmentModal';
 import { useExamStore } from '../../store/examStore';
 import { ImportDataButton } from './Common/ImportDataButton';
 import { DataTable } from './Common/DataTable';
-import { Department, PaginatedResponse } from '../../services/api/types';
+import { Department } from '../../services/api/types';
 import { departmentService } from '@/services/api';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 
 export const DepartmentManager = () => {
   const { 
@@ -28,7 +29,12 @@ export const DepartmentManager = () => {
   } = useDisclosure();
   const toast = useToast();
   const { deleteDepartment } = useExamStore();
-  const [departments, setDepartments] = React.useState<PaginatedResponse<Department>>({ data: [], length: 0 });
+  const queryClient = useQueryClient()
+  const query = useQuery(
+    ['departments'],
+    () => departmentService.getDepartments()
+  );
+  
   const [selectedDepartment, setSelectedDepartment] = React.useState<Department | null>(null);
 
   const columnHelper = createColumnHelper<Department>();
@@ -57,33 +63,30 @@ export const DepartmentManager = () => {
     onEditOpen();
   };
 
-  const handleDelete = (department: Department) => {
-    deleteDepartment(department.department_id);
-    toast({
-      title: 'Department deleted',
-      description: `${department.department_name} has been removed`,
-      status: 'success',
-      duration: 3000,
-    });
-  };
-
-  const fetchDepartments = async () => {
-    try {
-      const response = await departmentService.getDepartments();
-      console.log(response.data);
-      setDepartments(response.data);
-    } catch (error) {
-      toast({
-        title: 'Error fetching departments',
-        status: 'error',
-        duration: 3000,
-      });
+  const deleteDepartmentMutation = useMutation(
+    (id: number) => departmentService.deleteDepartment(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['departments']);
+        toast({
+          title: 'Department deleted successfully',
+          status: 'success',
+          duration: 3000,
+        });
+      },
+      onError: () => {
+        toast({
+          title: 'Failed to delete department',
+          status: 'error',
+          duration: 3000,
+        });
+      },
     }
+  );
+  const handleDelete = (department: Department) => {
+    deleteDepartmentMutation.mutate(department.department_id);
   };
-
-  useEffect(() => {
-    fetchDepartments();
-  }, []);
+ 
 
   return (
     <VStack align="stretch" spacing={4}>
@@ -95,7 +98,7 @@ export const DepartmentManager = () => {
       </HStack>
 
       <DataTable
-        data={departments.data}
+        data={query?.data?.data.data || []}
         columns={columns}
         onEdit={handleEdit}
         onDelete={handleDelete}

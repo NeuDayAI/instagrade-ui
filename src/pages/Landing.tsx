@@ -228,7 +228,7 @@ export const Landing = ({ showLanding = true }: LandingProps) => {
                 py={1}
                 rounded="full"
               >
-                AI-Powered Exam Evaluation
+                New AI-Powered Exam Evaluation
               </Badge>
               <Heading
                 as="h1"

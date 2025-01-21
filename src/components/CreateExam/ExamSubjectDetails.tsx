@@ -6,6 +6,7 @@ import {
   Input,
   Button,
   FormErrorMessage,
+  useDisclosure,
   useToast,
   HStack,
   useColorModeValue,
@@ -38,6 +39,7 @@ export const ExamSubjectDetails = () => {
   const navigate = useNavigate();
   const { subjects } = useExamStore();
   const { examDetails, setActiveStep } = useCreateExamStore();
+
   
   const {
     register,
@@ -47,10 +49,10 @@ export const ExamSubjectDetails = () => {
     defaultValues: {
       subjectDetails: examDetails.selectedSubjects.map(subjectId => ({
         subjectId,
-        maxMarks: 100,
+        maxMarks: 0,
         examDate: '',
         startTime: '',
-        duration: 180,
+        duration: 0,
       })),
     },
   });
@@ -95,6 +97,7 @@ export const ExamSubjectDetails = () => {
                         min: { value: 1, message: 'Must be greater than 0' },
                       })}
                       w="100px"
+                       placeholder="40"
                       bg={useColorModeValue('white', 'gray.700')}
                       borderColor={useColorModeValue('gray.200', 'gray.600')}
                     />
@@ -139,7 +142,7 @@ export const ExamSubjectDetails = () => {
                       type="number"
                       {...register(`subjectDetails.${index}.duration` as const, {
                         required: 'Required',
-                        min: { value: 30, message: 'Min 30 mins' },
+                        min: { value: 10, message: 'Min 10 mins' },
                         max: { value: 360, message: 'Max 360 mins' }
                       })}
                       placeholder="180"

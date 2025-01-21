@@ -25,7 +25,7 @@ export const DepartmentManager = () => {
   const { 
     isOpen: isEditOpen, 
     onOpen: onEditOpen, 
-    onClose: onEditClose 
+    onClose: onEditClose
   } = useDisclosure();
   const toast = useToast();
   const queryClient = useQueryClient()

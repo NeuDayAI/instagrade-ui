@@ -4,7 +4,6 @@ import { productionConfig } from './config.production';
 import { developmentConfig } from './config.development';
 
 const getConfig = (): Config => {
-  console.log(process.env.NODE_ENV);
   switch (process.env.NODE_ENV) {
     case 'production':
       return productionConfig;

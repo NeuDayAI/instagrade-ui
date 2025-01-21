@@ -195,24 +195,15 @@ export const Landing = ({ showLanding = true }: LandingProps) => {
               alt="InstaGrade Logo"
               h="40px"
             />
-            <ButtonGroup spacing={4}>
-              <Button
-                as={RouterLink}
-                to="/login"
-                leftIcon={<FiLogIn />}
-                variant="ghost"
-                colorScheme="blue"
-              >
-                Sign In
-              </Button>
-              <Button
-                as={RouterLink}
-                to="/login"
-                colorScheme="blue"
-              >
-                Get Started
-              </Button>
-            </ButtonGroup>
+           <Button
+              as={RouterLink}
+              to="/login"
+              leftIcon={<FiLogIn />}
+              variant="ghost"
+              colorScheme="blue"
+            >
+              Sign In
+            </Button>
           </HStack>
         </Container>
       </Box>

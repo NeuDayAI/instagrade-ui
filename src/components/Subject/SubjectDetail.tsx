@@ -7,6 +7,7 @@ import {
   useToast,
   Progress,
   useColorModeValue,
+  useDisclosure,
   Heading,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +28,12 @@ interface SubjectDetailProps {
 
 export const SubjectDetail = ({ subject, examId }: SubjectDetailProps) => {
   const toast = useToast();
+  const { 
+    isOpen: isAssignExaminerOpen, 
+    onOpen: onAssignExaminerOpen, 
+    onClose: onAssignExaminerClose 
+  } = useDisclosure();
+
   const navigate = useNavigate();
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -146,11 +153,18 @@ export const SubjectDetail = ({ subject, examId }: SubjectDetailProps) => {
         {user?.role === 'Admin' && (
           <Button
             colorScheme="purple"
-            onClick={() => {/* Handle assign examiner */}}
+            onClick={onAssignExaminerOpen}
           >
             Assign Examiner
           </Button>
         )}
+
+        <AssignExaminerModal
+          isOpen={isAssignExaminerOpen}
+          onClose={onAssignExaminerClose}
+          examId={examId}
+          subjectId={subject.subject_id}
+        />
 
         <Box>
           <Heading size="md" mb={4}>Student List</Heading>
@@ -182,6 +196,7 @@ export const SubjectDetail = ({ subject, examId }: SubjectDetailProps) => {
             }}
           />
         </Box>
+
       </VStack>
     </Box>
   );

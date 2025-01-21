@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Flex, Spacer, IconButton, useColorMode, useColorModeValue, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
 import { FiBell, FiMoon, FiSun, FiMonitor, FiLogOut, FiUser } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
+import { NotificationBell } from '../Notifications/NotificationBell';
 import { useAuthStore } from '../../store/authStore';
 
 export const Navbar = () => {
@@ -24,12 +25,9 @@ export const Navbar = () => {
     >
       <Flex alignItems="center" justifyContent="flex-end">
         <Spacer />
-        <IconButton
-          aria-label="Notifications"
-          icon={<FiBell />}
-          variant="ghost"
-          mr={2}
-        />
+        <Box mr={2}>
+          <NotificationBell />
+        </Box>
         <IconButton
           as={Link}
           to="/profile"

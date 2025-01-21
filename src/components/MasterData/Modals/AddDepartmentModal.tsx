@@ -31,11 +31,14 @@ interface FormData {
 }
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { AxiosError } from 'axios';
+import { APIError } from '@/services/api';
 
 export const AddDepartmentModal = ({ isOpen, onClose }: AddDepartmentModalProps) => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormData>();
 
@@ -52,10 +55,24 @@ export const AddDepartmentModal = ({ isOpen, onClose }: AddDepartmentModalProps)
             status: 'success',
             duration: 3000,
           });
+          onClose();
+          reset();
         },
-        onError: () => {
+        onError: (error:AxiosError<APIError>) => {
+          let errorMessage : string = '';
+          if (error.response) {
+            // Server responded with an error status
+            errorMessage = error.response.data.message;  
+          } else if (error.request) {
+            // Request made but no response received
+            errorMessage = 'Network error: ' + error.request;
+          } else {
+            // Something else went wrong
+            errorMessage = error.message;
+          }
           toast({
             title: 'Error adding department',
+            description: errorMessage,
             status: 'error',
             duration: 3000,
           });
@@ -65,8 +82,6 @@ export const AddDepartmentModal = ({ isOpen, onClose }: AddDepartmentModalProps)
 
   const onSubmit = (data: FormData) => {
     addDepartmentMutation.mutate({ department_name: data.departmentName });
-    console.log(data);
-    onClose();
   };
 
   return (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -18,7 +18,9 @@ import {
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { Subject } from '../../../types/exam';
-import { useExamStore } from '../../../store/examStore';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { APIError, departmentService, subjectService } from '@/services/api';
+import { AxiosError } from 'axios';
 
 interface EditSubjectModalProps {
   isOpen: boolean;
@@ -34,11 +36,54 @@ interface FormData {
 
 export const EditSubjectModal = ({ isOpen, onClose, subject }: EditSubjectModalProps) => {
   const toast = useToast();
-  const { departments, updateSubject } = useExamStore();
+  const queryClient = useQueryClient();
+
+ const departmentsQuery = useQuery(['departments'], () => departmentService.getDepartments());  
+ 
+const [departments] = useState(departmentsQuery.data?.data.data || []);
+  
+  const mutation = useMutation(
+    (data: { id: number; name: string; type: string; departmentId: number }) =>
+      subjectService.updateSubject(data.id, {
+        subject_name: data.name,
+        subject_type: data.type,
+        department_id: data.departmentId,
+      }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['subjects']);
+        toast({
+          title: 'Subject updated',
+          status: 'success',
+          duration: 3000,
+        });
+      },
+     onError: (error: AxiosError<APIError>) => {
+             let errorMessage : string = '';
+             if (error.response) {
+               // Server responded with an error status
+               errorMessage = error.response.data.message;
+             } else if (error.request) {
+               // Request made but no response received
+               errorMessage = 'Network error: ' + error.request;
+             } else {
+               // Something else went wrong
+               errorMessage = error.message;
+             }
+        toast({
+          title: 'Error updating subject',
+          description: errorMessage,
+          status: 'error',
+          duration: 3000,
+        });
+      }
+    }
+  );
   
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
@@ -49,22 +94,22 @@ export const EditSubjectModal = ({ isOpen, onClose, subject }: EditSubjectModalP
   });
 
   const onSubmit = (data: FormData) => {
-    updateSubject(subject.subject_id, {
-      ...subject,
-      subject_name: data.subjectName,
-      department_id: parseInt(data.departmentId),
-      subject_type: data.subjectType,
+    mutation.mutate({
+      id: subject.subject_id,
+      name: data.subjectName,
+      type: data.subjectType,
+      departmentId: Number(data.departmentId),
     });
-    
-    toast({
-      title: 'Subject updated',
-      description: `${data.subjectName} has been updated successfully`,
-      status: 'success',
-      duration: 3000,
-    });
-    
     onClose();
   };
+
+  useEffect(() => {
+    reset({
+      subjectName: subject.subject_name,
+      departmentId: subject.department_id.toString(),
+      subjectType: subject.subject_type,
+    });
+  }, [subject, reset]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

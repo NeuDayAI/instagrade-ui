@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -24,10 +24,15 @@ import {
   PopoverCloseButton,
   HStack,
 } from '@chakra-ui/react';
-import { FiInfo } from 'react-icons/fi';
-import { useForm } from 'react-hook-form';
-import { useExamStore } from '../../../store/examStore';
 
+import { useForm } from 'react-hook-form';
+
+import { subjectService, departmentService, APIError } from '@/services/api';
+import { useToast } from '@chakra-ui/react';
+import { SubjectCreate } from '@/services/api';
+
+import {useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 interface AddSubjectModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,24 +42,65 @@ interface FormData {
   subjectName: string;
   departmentId: string;
   subjectType: string;
-  rubricId: string;
 }
 
 export const AddSubjectModal = ({ isOpen, onClose }: AddSubjectModalProps) => {
-  const departments = useExamStore((state) => state.departments);
-  const rubrics = useExamStore((state) => state.rubrics);
-
   const {
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
   } = useForm<FormData>();
 
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  const departmentsQuery = useQuery(['departments'], () => departmentService.getDepartments());  
+
+  const [departments] = useState(departmentsQuery.data?.data.data || []);
+  
+  const addSubjectMutation = useMutation(
+    (newSubject: SubjectCreate) => subjectService.createSubject(newSubject),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['subjects']);
+        toast({
+          title: 'Subject added successfully',
+          status: 'success',
+          duration: 3000,
+        });
+        onClose();
+        reset();
+      },
+      onError: (error: AxiosError<APIError>) => {
+        let errorMessage : string = '';
+          if (error.response) {
+            // Server responded with an error status
+            errorMessage = error.response.data.message;
+          } else if (error.request) {
+            // Request made but no response received
+            errorMessage = 'Network error: ' + error.request;
+          } else {
+            // Something else went wrong
+            errorMessage = error.message;
+          }
+        toast({
+          title: 'Error adding subject',
+          description: errorMessage,
+          status: 'error',
+          duration: 3000,
+        });
+      },
+    }
+  );
+
   const onSubmit = (data: FormData) => {
-    // Here you would typically save the subject
-    console.log(data);
-    onClose();
+    addSubjectMutation.mutate({
+      subject_name: data.subjectName,
+      department_id: Number(data.departmentId),
+      subject_type: data.subjectType,
+    });
   };
 
   return (
@@ -100,46 +146,6 @@ export const AddSubjectModal = ({ isOpen, onClose }: AddSubjectModalProps) => {
                 </Select>
                 <FormErrorMessage>
                   {errors.departmentId && errors.departmentId.message}
-                </FormErrorMessage>
-              </FormControl>
-
-              <FormControl isInvalid={!!errors.rubricId}>
-                <FormLabel>Evaluation Rubric</FormLabel>
-                <HStack>
-                  <Select
-                    {...register('rubricId', {
-                      required: 'Please select a rubric',
-                    })}
-                    placeholder="Select rubric"
-                  >
-                    {rubrics.map((rubric) => (
-                      <option key={rubric.rubric_id} value={rubric.rubric_id}>
-                        {rubric.name}
-                      </option>
-                    ))}
-                  </Select>
-                  <Popover placement="right">
-                    <PopoverTrigger>
-                      <IconButton
-                        aria-label="View rubric details"
-                        icon={<FiInfo />}
-                        size="sm"
-                        variant="ghost"
-                      />
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <PopoverArrow />
-                      <PopoverCloseButton />
-                      <PopoverBody whiteSpace="pre-wrap">
-                        {watch('rubricId') && 
-                          rubrics.find(r => r.rubric_id === Number(watch('rubricId')))?.rubric_text
-                        }
-                      </PopoverBody>
-                    </PopoverContent>
-                  </Popover>
-                </HStack>
-                <FormErrorMessage>
-                  {errors.rubricId && errors.rubricId.message}
                 </FormErrorMessage>
               </FormControl>
 

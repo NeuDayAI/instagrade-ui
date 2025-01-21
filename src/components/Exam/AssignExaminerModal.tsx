@@ -15,7 +15,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useExamStore } from '../../store/examStore';
-import { useAuthStore } from '../../store/authStore';
+
+import { mockUsers } from '../../data/mockData';
 
 interface AssignExaminerModalProps {
   isOpen: boolean;
@@ -27,12 +28,9 @@ interface AssignExaminerModalProps {
 export const AssignExaminerModal = ({ isOpen, onClose, subjectId, examId }: AssignExaminerModalProps) => {
   const toast = useToast();
   const { assignExaminer } = useExamStore();
-  const { users } = useAuthStore();
   const [selectedExaminer, setSelectedExaminer] = React.useState('');
 
-  const examiners = users.filter(user => 
-    user.role === 'Examiner' && user.is_active
-  );
+  const examiners = mockUsers.filter((u) => u.role.toLocaleLowerCase() === 'examiner' && u.is_active);
 
   const handleAssign = () => {
     if (!selectedExaminer) {

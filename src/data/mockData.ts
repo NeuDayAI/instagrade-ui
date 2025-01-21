@@ -1,4 +1,4 @@
-import { Department, Exam, ExamSubject, Subject, Student, StudentMarks, Semester } from '../types/exam';
+import { Department, Exam, ExamSubject, Subject, Student, StudentMarks, Semester, User } from '../types/exam';
 import { Rubric } from '../types/exam';
 
 export const mockRubrics: Rubric[] = [

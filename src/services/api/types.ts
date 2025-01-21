@@ -4,13 +4,15 @@ export interface PaginatedResponse<T> {
   length: number;
 }
 
-export interface Message {
-  message: string;
-}
-
 // Error response type
 export interface APIError {
-  detail: string;
+ error: boolean,
+ message: string,
+ status_code: number
+}
+
+export interface Message {
+  message: string;
 }
 
 // Department types
@@ -47,21 +49,18 @@ export interface Subject {
   subject_name: string;
   subject_type: string;
   department_id: number;
-  rubric_id?: number;
 }
 
 export interface SubjectCreate {
   subject_name: string;
   subject_type: string;
   department_id: number;
-  rubric_id?: number;
 }
 
 export interface SubjectUpdate {
   subject_name?: string;
   subject_type?: string;
   department_id?: number;
-  rubric_id?: number;
 }
 
 // Exam types
